@@ -67,6 +67,13 @@ class DbManager:
         if not email or not password:
             return {"success": False, "error": "Email and Password cannot be empty."}
 
+        # Check email format
+        if "@" not in email or "." not in email.split("@")[-1]:
+            return {
+                "success": False, 
+                "error": "Invalid email format. Please use a standard format (e.g., name@domain.com) to register."
+            }
+
         try:
             with self.get_connection() as conn:
                 # Check if user already exists
@@ -101,12 +108,22 @@ class DbManager:
         if not email or not password:
             return {"success": False, "error": "Email and Password cannot be empty."}
 
+        # Check email format
+        if "@" not in email or "." not in email.split("@")[-1]:
+            return {
+                "success": False, 
+                "error": "Invalid email format. Please enter a valid email address (e.g., name@domain.com)."
+            }
+
         try:
             with self.get_connection() as conn:
                 cursor = conn.execute("SELECT password_hash, salt, role FROM users WHERE email = ?", (email,))
                 user = cursor.fetchone()
                 if not user:
-                    return {"success": False, "error": "Invalid email or password."}
+                    return {
+                        "success": False, 
+                        "error": "This email address is not registered. Please register a new account first."
+                    }
 
                 hashed_check, _ = self.hash_password(password, user["salt"])
                 if hashed_check == user["password_hash"]:
@@ -117,7 +134,10 @@ class DbManager:
                         "role": user["role"],
                         "email": email
                     }
-            return {"success": False, "error": "Invalid email or password."}
+            return {
+                "success": False, 
+                "error": "Incorrect password. Please verify your credentials and try again."
+            }
         except Exception as e:
             return {"success": False, "error": f"Database authentication failed: {str(e)}"}
 
