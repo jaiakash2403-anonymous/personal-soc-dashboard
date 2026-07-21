@@ -43,7 +43,7 @@ class SetupWizard:
 
     def init_frames(self):
         # Step 0: Welcome Frame
-        f0 = tk.Frame(self.root, bg="#f8fafc", padding=24)
+        f0 = tk.Frame(self.root, bg="#f8fafc", padx=24, pady=24)
         lbl_welcome_title = tk.Label(f0, text="Welcome to the AURA Personal SOC Setup Wizard", font=("Outfit", 15, "bold"), fg="#0f172a", bg="#f8fafc", justify="left")
         lbl_welcome_title.pack(anchor="w", pady=(0, 12))
         
@@ -52,7 +52,7 @@ class SetupWizard:
         self.frames.append(f0)
         
         # Step 1: Folder Selection Frame
-        f1 = tk.Frame(self.root, bg="#f8fafc", padding=24)
+        f1 = tk.Frame(self.root, bg="#f8fafc", padx=24, pady=24)
         lbl_folder_title = tk.Label(f1, text="Select Installation Folder", font=("Outfit", 14, "bold"), fg="#0f172a", bg="#f8fafc")
         lbl_folder_title.pack(anchor="w", pady=(0, 12))
         
@@ -77,7 +77,7 @@ class SetupWizard:
         self.frames.append(f1)
         
         # Step 2: Installing Frame
-        f2 = tk.Frame(self.root, bg="#f8fafc", padding=24)
+        f2 = tk.Frame(self.root, bg="#f8fafc", padx=24, pady=24)
         lbl_installing_title = tk.Label(f2, text="Installing AURA Personal SOC...", font=("Outfit", 14, "bold"), fg="#0f172a", bg="#f8fafc")
         lbl_installing_title.pack(anchor="w", pady=(0, 16))
         
@@ -89,7 +89,7 @@ class SetupWizard:
         self.frames.append(f2)
         
         # Step 3: Success Frame
-        f3 = tk.Frame(self.root, bg="#f8fafc", padding=24)
+        f3 = tk.Frame(self.root, bg="#f8fafc", padx=24, pady=24)
         lbl_success_title = tk.Label(f3, text="Installation Completed Successfully", font=("Outfit", 15, "bold"), fg="#10b981", bg="#f8fafc")
         lbl_success_title.pack(anchor="w", pady=(0, 12))
         
