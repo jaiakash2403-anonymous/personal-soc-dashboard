@@ -3,7 +3,7 @@ import sys
 import os
 
 def build():
-    print("Building Personal SOC Dashboard...")
+    print("Building Personal SOC Dashboard (v2.0)...")
     
     # In Windows, we use a semicolon separator. On other systems, we use a colon.
     sep = ';' if sys.platform.startswith('win') else ':'
@@ -21,8 +21,9 @@ def build():
         
     print(f"Using PyInstaller: {pyinstaller_path}")
     
-    # We will build as a single file, windowed (no console window) executable.
-    cmd = [
+    # --- PHASE 1: BUILD MAIN SOC APPLICATION ---
+    print("\n[PHASE 1] Packaging Main Telemetry Application...")
+    cmd_main = [
         f'"{pyinstaller_path}"',
         "--onefile",
         "--noconsole",
@@ -31,18 +32,41 @@ def build():
         "app.py"
     ]
     
-    print(f"Running command: {' '.join(cmd)}")
+    print(f"Running command: {' '.join(cmd_main)}")
+    result_main = subprocess.run(" ".join(cmd_main), shell=True)
     
-    # Run the pyinstaller process
-    result = subprocess.run(" ".join(cmd), shell=True)
+    if result_main.returncode != 0:
+        print(f"\nPhase 1 failed with exit code: {result_main.returncode}")
+        sys.exit(1)
+        
+    print("\nPhase 1 Succeeded: generated dist/PersonalSOC.exe")
+
+    # --- PHASE 2: BUILD SETUP WIZARD INSTALLER ---
+    print("\n[PHASE 2] Packaging Visual Setup Wizard Installer...")
     
-    if result.returncode == 0:
-        print("\n==================================================")
-        print("BUILD SUCCESSFUL!")
-        print("Executable is located at: dist/PersonalSOC.exe")
-        print("==================================================")
-    else:
-        print(f"\nBuild failed with exit code: {result.returncode}")
+    # Bundle both compiled app and seeded database into the installer resource payload
+    cmd_setup = [
+        f'"{pyinstaller_path}"',
+        "--onefile",
+        "--noconsole",
+        f"--add-data=dist/PersonalSOC.exe{sep}.",
+        f"--add-data=dist/soc_dashboard.db{sep}.",
+        "--name=PersonalSOC_Setup",
+        "setup_wizard.py"
+    ]
+    
+    print(f"Running command: {' '.join(cmd_setup)}")
+    result_setup = subprocess.run(" ".join(cmd_setup), shell=True)
+    
+    if result_setup.returncode != 0:
+        print(f"\nPhase 2 failed with exit code: {result_setup.returncode}")
+        sys.exit(1)
+        
+    print("\n==================================================")
+    print("BUILD SUCCESSFUL!")
+    print("Main Application: dist/PersonalSOC.exe")
+    print("Setup Installer Wizard: dist/PersonalSOC_Setup.exe")
+    print("==================================================")
 
 if __name__ == "__main__":
     build()
