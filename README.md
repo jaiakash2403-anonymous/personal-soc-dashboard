@@ -30,8 +30,8 @@ Follow these instructions to download, install, and configure AURA on your Windo
 
 ### Step 4: Accessing the Dashboard (Login Credentials)
 To log in as the default administrator and start auditing endpoints:
-* **Administrator Email ID:** `jaiakash2403@gmail.com`
-* **Default Security Password:** `@123Abc7`
+* **Administrator Email ID:** `admin@aura-soc.local`
+* **Default Security Password:** `AuraSecureAdmin@2026`
 
 *(Alternatively, you can click **Register Account** inside the interface to set up a new standard user or administrator endpoint account local to your PC database).*
 

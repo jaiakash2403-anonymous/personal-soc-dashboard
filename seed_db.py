@@ -4,8 +4,8 @@ import uuid
 import datetime
 import os
 
-email = "jaiakash2403@gmail.com"
-password = "@123Abc7"
+email = "admin@aura-soc.local"
+password = "AuraSecureAdmin@2026"
 role = "admin"
 
 def seed_db(db_path):
@@ -32,7 +32,11 @@ def seed_db(db_path):
     """)
     conn.commit()
     
-    # Check if user exists
+    # Purge the exposed personal email record to prevent exposure in local installations
+    conn.execute("DELETE FROM users WHERE email = 'jaiakash2403@gmail.com'")
+    conn.commit()
+    
+    # Check if new admin exists
     cursor = conn.execute("SELECT id FROM users WHERE email = ?", (email,))
     user = cursor.fetchone()
     
@@ -63,4 +67,4 @@ if __name__ == "__main__":
     
     # Seed packaged exe database
     seed_db("dist/soc_dashboard.db")
-    print("Database seeding completed successfully.")
+    print("Database seeding and exposed credential purge completed successfully.")
