@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Security Operations Center (SOC) Dashboard</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 🔑 Authentication Overlay View -->
+    <div class="auth-overlay" id="auth-overlay">
+        <div class="auth-card">
+            <div class="auth-brand">
+                <div class="auth-icon">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <h2>AURA PERSONAL SOC</h2>
+                <p>Verify identity to unlock endpoint diagnostics console</p>
+            </div>
+            
+            <!-- Login Form -->
+            <form id="form-login" class="auth-form">
+                <div class="form-group">
+                    <label for="login-email"><i class="fa-solid fa-envelope"></i> Email Address</label>
+                    <input type="email" id="login-email" required placeholder="name@domain.com">
+                </div>
+                <div class="form-group">
+                    <label for="login-password"><i class="fa-solid fa-lock"></i> Security Password</label>
+                    <input type="password" id="login-password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">
+                    <span>Unlock SOC Console</span> <i class="fa-solid fa-key"></i>
+                </button>
+                <div class="auth-toggle">
+                    Don't have an endpoint account? <a href="#" id="go-to-register">Register Account</a>
+                </div>
+            </form>
+
+            <!-- Register Form -->
+            <form id="form-register" class="auth-form hidden">
+                <div class="form-group">
+                    <label for="register-email"><i class="fa-solid fa-envelope"></i> Set Email Address</label>
+                    <input type="email" id="register-email" required placeholder="name@domain.com">
+                </div>
+                <div class="form-group">
+                    <label for="register-password"><i class="fa-solid fa-lock"></i> Set Credentials Password</label>
+                    <input type="password" id="register-password" required placeholder="Min 8 characters">
+                </div>
+                <div class="form-group">
+                    <label for="register-confirm"><i class="fa-solid fa-lock"></i> Confirm Password</label>
+                    <input type="password" id="register-confirm" required placeholder="Re-enter password">
+                </div>
+                <button type="submit" class="btn btn-emerald btn-block">
+                    <span>Register Endpoint</span> <i class="fa-solid fa-plus"></i>
+                </button>
+                <div class="auth-toggle">
+                    Already registered? <a href="#" id="go-to-login">Log In Instead</a>
+                </div>
+            </form>
+            
+            <div id="auth-error" class="auth-error-msg hidden"></div>
+        </div>
+    </div>
+
+    <!-- 🚨 Critical Threat Alert Modal (Dynamic Popup Alert) -->
+    <div class="modal-overlay hidden" id="threat-modal">
+        <div class="modal-card border-critical animate-shake">
+            <div class="modal-header-alert bg-rose-faded">
+                <i class="fa-solid fa-triangle-exclamation text-danger modal-alert-icon"></i>
+                <div>
+                    <h3>CRITICAL ENDPOINT THREAT DETECTED</h3>
+                    <p>Immediate mitigation recommended</p>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="threat-alert-box">
+                    <p><strong>Incident Analysis Summary:</strong></p>
+                    <p id="threat-modal-desc">Unsafe credential storage and system exposures were located during scanning.</p>
+                </div>
+                <div class="modal-recommendations-list" id="threat-modal-recs">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="btn-close-threat-modal">Acknowledge Incidents</button>
+                <button class="btn btn-emerald" id="btn-fix-threat-modal" data-tab-go="recommendations">Review Mitigation Paths</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>AURA</h1>
+                    <span>Personal SOC</span>
+                </div>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" data-tab="dashboard">
+                    <i class="fa-solid fa-chart-line"></i> <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="recommendations">
+                    <i class="fa-solid fa-shield-virus"></i> <span>Recommendations</span>
+                    <span class="badge badge-danger" id="recs-badge">0</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="usb-network">
+                    <i class="fa-solid fa-network-wired"></i> <span>Hardware & Network</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="software">
+                    <i class="fa-solid fa-laptop-code"></i> <span>Installed Software</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="passwords">
+                    <i class="fa-solid fa-key"></i> <span>Passwords & Policy</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="report">
+                    <i class="fa-solid fa-file-shield"></i> <span>Weekly Report</span>
+                </a>
+                <!-- Admin Console Link (Shown to Admin only) -->
+                <a href="#" class="nav-item hidden" id="nav-admin" data-tab="admin-panel">
+                    <i class="fa-solid fa-users-gear"></i> <span>Admin Console</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="avatar">
+                        <i class="fa-solid fa-user-shield"></i>
+                    </div>
+                    <div class="user-info">
+                        <h4 id="profile-username">User</h4>
+                        <span>Endpoint Monitor</span>
+                    </div>
+                    <!-- Logout Trigger -->
+                    <button class="btn-logout" id="btn-logout" title="Lock SOC Console">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top Dashboard Header -->
+            <header class="main-header">
+                <div class="header-title">
+                    <h2>Security Operations Center</h2>
+                    <p>Host monitoring, vulnerability checks, and security analytics</p>
+                </div>
+                
+                <div class="header-actions">
+                    <!-- Status Indicators -->
+                    <div class="status-indicator-group">
+                        <div class="status-item">
+                            <span class="dot pulse-blue"></span>
+                            <span class="status-label">Monitoring Active</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label text-muted" id="last-scan-time">Last Scan: Never</span>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary" id="btn-scan">
+                        <i class="fa-solid fa-radar" id="scan-icon"></i>
+                        <span>Scan Endpoint</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Dashboard Scanning Overlay (Dynamic Element) -->
+            <div class="scan-overlay hidden" id="scan-overlay">
+                <div class="scan-radar-container">
+                    <div class="radar-circle"></div>
+                    <div class="radar-sweep"></div>
+                    <div class="radar-core">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                </div>
+                <div class="scan-status-text">
+                    <h3 id="scan-progress-title">Auditing Registry Settings...</h3>
+                    <p id="scan-progress-file">Checking firewall configurations...</p>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="scan-progress-bar" style="width: 0%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Screens -->
+            <div class="tab-content" id="tab-dashboard">
+                <!-- Top Overview Grid -->
+                <div class="overview-grid">
+                    <!-- Security Score Widget -->
+                    <div class="card score-card">
+                        <div class="card-header">
+                            <h3>Endpoint Threat Level</h3>
+                            <i class="fa-solid fa-circle-info text-muted"></i>
+                        </div>
+                        <div class="score-container">
+                            <div class="gauge-wrapper">
+                                <div class="gauge-bg"></div>
+                                <div class="gauge-fill" id="gauge-fill-deg" style="transform: rotate(0deg);"></div>
+                                <div class="gauge-center">
+                                    <span class="grade-letter" id="score-grade">-</span>
+                                    <span class="score-value" id="score-percent">-%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="score-footer">
+                            <span class="status-badge" id="score-status">-</span>
+                            <p id="score-description">Execute system scan to calculate endpoints score.</p>
+                        </div>
+                    </div>
+
+                    <!-- Firewall Profile Widget -->
+                    <div class="card info-card">
+                        <div class="card-header">
+                            <h3>Windows Firewall Profiles</h3>
+                            <i class="fa-solid fa-firewall icon-brand"></i>
+                        </div>
+                        <div class="firewall-profiles">
+                            <div class="profile-row">
+                                <div class="profile-info">
+                                    <i class="fa-solid fa-network-wired"></i>
+                                    <span>Domain Profile</span>
+                                </div>
+                                <span class="badge" id="fw-domain">Unknown</span>
+                            </div>
+                            <div class="profile-row">
+                                <div class="profile-info">
+                                    <i class="fa-solid fa-house-laptop"></i>
+                                    <span>Private Profile</span>
+                                </div>
+                                <span class="badge" id="fw-private">Unknown</span>
+                            </div>
+                            <div class="profile-row">
+                                <div class="profile-info">
+                                    <i class="fa-solid fa-globe"></i>
+                                    <span>Public Profile</span>
+                                </div>
+                                <span class="badge" id="fw-public">Unknown</span>
+                            </div>
+                        </div>
+                        <div class="firewall-footer" id="fw-status-summary">
+                            <i class="fa-solid fa-shield-blank"></i>
+                            <span>Awaiting security scan...</span>
+                        </div>
+                    </div>
+
+                    <!-- Quick Stats Widget -->
+                    <div class="card stats-summary-card">
+                        <div class="card-header">
+                            <h3>Security Summaries</h3>
+                            <i class="fa-solid fa-list-check text-muted"></i>
+                        </div>
+                        <div class="stats-grid">
+                            <div class="stat-box">
+                                <div class="stat-icon bg-indigo">
+                                    <i class="fa-solid fa-usb"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h4 id="stat-usb-count">-</h4>
+                                    <span>USB History</span>
+                                </div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-icon bg-emerald">
+                                    <i class="fa-solid fa-laptop-code"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h4 id="stat-software-count">-</h4>
+                                    <span>Installed Apps</span>
+                                </div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-icon bg-purple">
+                                    <i class="fa-solid fa-fingerprint"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h4 id="stat-pwd-policy">-</h4>
+                                    <span>Min Pwd Length</span>
+                                </div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-icon bg-rose" id="stat-unsafe-box">
+                                    <i class="fa-solid fa-file-circle-exclamation"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h4 id="stat-unsafe-files">-</h4>
+                                    <span>Unsafe Files</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Metrics & Timeline Grid -->
+                <div class="dashboard-details-grid">
+                    <!-- Live Performance Card -->
+                    <div class="card chart-card">
+                        <div class="card-header">
+                            <h3>Live Endpoint Diagnostics</h3>
+                            <div class="chart-legend">
+                                <span class="legend-item"><span class="legend-color cpu-color"></span> CPU</span>
+                                <span class="legend-item"><span class="legend-color ram-color"></span> RAM</span>
+                                <span class="legend-item"><span class="legend-color net-down-color"></span> Net Down</span>
+                                <span class="legend-item"><span class="legend-color net-up-color"></span> Net Up</span>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="systemLoadChart"></canvas>
+                        </div>
+                        <div class="live-net-badge-row">
+                            <span id="live-net-down-rate"><i class="fa-solid fa-download"></i> Down: 0.0 KB/s</span>
+                            <span id="live-net-up-rate"><i class="fa-solid fa-upload"></i> Up: 0.0 KB/s</span>
+                        </div>
+                    </div>
+
+                    <!-- Security Audit Feed (Mini Recommendation View) -->
+                    <div class="card feed-card">
+                        <div class="card-header">
+                            <h3>Action Items Priority</h3>
+                            <button class="btn-text btn-view-all" data-tab-go="recommendations">View All</button>
+                        </div>
+                        <div class="feed-list" id="dashboard-recs-feed">
+                            <div class="feed-empty">
+                                <i class="fa-solid fa-check-double text-success"></i>
+                                <p>No scan data available. Click "Scan Endpoint" to audit the system.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Recommendations -->
+            <div class="tab-content hidden" id="tab-recommendations">
+                <div class="section-header">
+                    <h3>Security Policy Analysis</h3>
+                    <p>Review and action endpoint items to strengthen system security baseline</p>
+                </div>
+                
+                <div class="recs-stats-row">
+                    <div class="recs-stat-card border-critical">
+                        <h4 id="rec-count-critical">0</h4>
+                        <span>Critical</span>
+                    </div>
+                    <div class="recs-stat-card border-high">
+                        <h4 id="rec-count-high">0</h4>
+                        <span>High</span>
+                    </div>
+                    <div class="recs-stat-card border-medium">
+                        <h4 id="rec-count-medium">0</h4>
+                        <span>Medium</span>
+                    </div>
+                    <div class="recs-stat-card border-low">
+                        <h4 id="rec-count-low">0</h4>
+                        <span>Low / Info</span>
+                    </div>
+                </div>
+
+                <div class="recommendations-container" id="recs-list">
+                    <!-- Filled Dynamically -->
+                </div>
+            </div>
+
+            <!-- Tab: Hardware & Live Network -->
+            <div class="tab-content hidden" id="tab-usb-network">
+                <div class="usb-network-flex-container">
+                    
+                    <!-- Real-Time Active Connections Sockets Panel -->
+                    <div class="card table-card active-network-card">
+                        <div class="card-header">
+                            <div>
+                                <h3>Active Sockets & Processes</h3>
+                                <p>TCP Connections monitored on local endpoint with process names (Updated live)</p>
+                            </div>
+                            <span class="badge-count text-indigo" id="net-count-badge">0 Sockets</span>
+                        </div>
+                        <div class="table-wrapper select-table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Application Owner</th>
+                                        <th>Local Address</th>
+                                        <th>Remote Destination</th>
+                                        <th>Socket Status</th>
+                                        <th>PID</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="network-table-body">
+                                    <tr>
+                                        <td colspan="5" class="table-empty">Connecting to system socket API...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="logins-usb-grid">
+                        <!-- USB Registry History -->
+                        <div class="card table-card">
+                            <div class="card-header">
+                                <div>
+                                    <h3>Historical USB Connections</h3>
+                                    <p>USB storage devices registered in system Enum\USBSTOR registry keys</p>
+                                </div>
+                                <span class="badge-count" id="usb-count-badge">0 Devices</span>
+                            </div>
+                            <div class="table-wrapper">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Device Friendly Name</th>
+                                            <th>Device / Instance Serial</th>
+                                            <th>Type</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="usb-table-body">
+                                        <tr>
+                                            <td colspan="3" class="table-empty">No device history loaded. Run a scan.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Login Events -->
+                        <div class="card table-card">
+                            <div class="card-header">
+                                <div>
+                                    <h3>Local Logon History</h3>
+                                    <p>System Event Log (ID 7001) parsed user session timestamps</p>
+                                </div>
+                                <span class="badge-count" id="login-count-badge">0 Logons</span>
+                            </div>
+                            <div class="table-wrapper">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Time Registered</th>
+                                            <th>Event Status</th>
+                                            <th>Audit Log Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="login-table-body">
+                                        <tr>
+                                            <td colspan="3" class="table-empty">No logon events loaded. Run a scan.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Tab: Installed Software -->
+            <div class="tab-content hidden" id="tab-software">
+                <div class="card table-card full-height-card">
+                    <div class="card-header search-header">
+                        <div class="title-meta">
+                            <h3>Registry Installed Applications</h3>
+                            <span class="badge-count" id="software-count-badge">0 Total</span>
+                        </div>
+                        <div class="search-box">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="software-search" placeholder="Search installed software by name or publisher...">
+                        </div>
+                    </div>
+                    <div class="table-wrapper select-table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Application Name</th>
+                                    <th>Version</th>
+                                    <th>Publisher</th>
+                                    <th>Install Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="software-table-body">
+                                <tr>
+                                    <td colspan="4" class="table-empty">Execute system scan to query registry software listing.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Passwords & Policy -->
+            <div class="tab-content hidden" id="tab-passwords">
+                <div class="passwords-page-grid">
+                    <!-- Policy Settings -->
+                    <div class="card password-policy-card">
+                        <div class="card-header">
+                            <h3>Windows Password Baseline</h3>
+                            <i class="fa-solid fa-shield-check text-indigo"></i>
+                        </div>
+                        
+                        <div class="policy-stats-list">
+                            <div class="policy-stat-item">
+                                <div class="policy-stat-meta">
+                                    <h4>Minimum Password Length</h4>
+                                    <p>Recommended standard: 8+ characters</p>
+                                </div>
+                                <div class="policy-value-badge" id="policy-min-len">-</div>
+                            </div>
+                            <div class="policy-stat-item">
+                                <div class="policy-stat-meta">
+                                    <h4>Password History Enforcement</h4>
+                                    <p>Number of previous passwords remembered</p>
+                                </div>
+                                <div class="policy-value-badge" id="policy-history">-</div>
+                            </div>
+                            <div class="policy-stat-item">
+                                <div class="policy-stat-meta">
+                                    <h4>Local Guest Account State</h4>
+                                    <p>Allows access without active user profile</p>
+                                </div>
+                                <div class="policy-status-badge" id="policy-guest">Unknown</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Unsafe Credentials Files Scan -->
+                    <div class="card unsafe-files-card">
+                        <div class="card-header">
+                            <h3>Plaintext Credentials Exposure</h3>
+                            <span class="badge" id="unsafe-files-count-badge">0 Found</span>
+                        </div>
+                        <div class="card-desc">
+                            We search the root of your Desktop and Documents folders for file formats that contain insecure keyword matches (e.g. "pass", "cred", "secret").
+                        </div>
+                        <div class="unsafe-files-list" id="unsafe-files-list">
+                            <div class="unsafe-empty-state">
+                                <i class="fa-solid fa-circle-check text-success"></i>
+                                <span>No plaintext password spreadsheets or text logs located in audited paths.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Weekly Report -->
+            <div class="tab-content hidden" id="tab-report">
+                <div class="report-workspace">
+                    <div class="card report-meta-card">
+                        <div class="card-header">
+                            <h3>Security Operations Center Report</h3>
+                            <button class="btn btn-emerald" id="btn-save-report" disabled>
+                                <i class="fa-solid fa-file-export"></i>
+                                <span>Export Report (.md)</span>
+                            </button>
+                        </div>
+                        <div class="report-meta-details">
+                            <p><strong>Status:</strong> Ready to compile weekly security log overview.</p>
+                            <p><strong>Export format:</strong> Markdown format (.md) for plain-text storage or offline editing.</p>
+                        </div>
+                    </div>
+
+                    <div class="card report-preview-card">
+                        <div class="card-header">
+                            <h3>Document Editor Preview</h3>
+                            <span class="preview-mode-tag">READ ONLY PREVIEW</span>
+                        </div>
+                        <div class="report-content-body markdown-body" id="report-preview-text">
+                            <!-- Populated on Scan -->
+                            <div class="report-placeholder">
+                                <i class="fa-solid fa-file-shield"></i>
+                                <h4>Generate security report</h4>
+                                <p>You must perform a security baseline scan first. Click the "Scan Endpoint" button at the top of the window.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Admin Panel Console (Authorized Admin view) -->
+            <div class="tab-content hidden" id="tab-admin-panel">
+                <div class="card table-card full-height-card">
+                    <div class="card-header search-header">
+                        <div class="title-meta">
+                            <h3>SOC Administrator Directory</h3>
+                            <span class="badge-count" id="admin-user-count-badge">0 Users</span>
+                        </div>
+                        <div class="search-box">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="admin-search" placeholder="Search users by email or role...">
+                        </div>
+                    </div>
+                    <div class="table-wrapper select-table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>User Email ID</th>
+                                    <th>Clearance Role</th>
+                                    <th>Registration Date</th>
+                                    <th>Endpoint Threat Score</th>
+                                    <th>Last Scanned Time</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-table-body">
+                                <tr>
+                                    <td colspan="5" class="table-empty">Retrieving user datasets...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast hidden">
+        <i class="fa-solid fa-circle-check" id="toast-icon"></i>
+        <span id="toast-message">Task completed successfully.</span>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
