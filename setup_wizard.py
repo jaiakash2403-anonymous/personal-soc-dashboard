@@ -253,6 +253,36 @@ shortcut.Save()
                 shortcut_path = os.path.join(start_menu, "Personal SOC Dashboard.lnk")
                 self.write_shortcut(dest_exe, self.install_dir, shortcut_path)
 
+            # 5. Register application in Windows Installed Apps (Add/Remove Programs) Registry
+            self.lbl_status.config(text="Registering installed application...")
+            self.root.update()
+            
+            import winreg
+            reg_path = r"Software\Microsoft\Windows\CurrentVersion\Uninstall\AuraPersonalSOC"
+            try:
+                # Calculate size of installed binaries in KB
+                total_size_kb = 0
+                for file_name in ["PersonalSOC.exe", "soc_dashboard.db"]:
+                    f_path = os.path.join(self.install_dir, file_name)
+                    if os.path.exists(f_path):
+                        total_size_kb += os.path.getsize(f_path) // 1024
+
+                # Auto-uninstall CMD script execution path (wipes folders, shortcuts, and registry)
+                uninstall_cmd = f'cmd.exe /c rmdir /s /q "{self.install_dir}" & reg delete "HKCU\\{reg_path}" /f & del /f /q "%userprofile%\\Desktop\\Personal SOC Dashboard.lnk" & del /f /q "%appdata%\\Microsoft\\Windows\\Start Menu\\Programs\\Personal SOC Dashboard.lnk"'
+
+                with winreg.CreateKey(winreg.HKEY_CURRENT_USER, reg_path) as key:
+                    winreg.SetValueEx(key, "DisplayName", 0, winreg.REG_SZ, "AURA Personal SOC")
+                    winreg.SetValueEx(key, "DisplayVersion", 0, winreg.REG_SZ, "2.1.0")
+                    winreg.SetValueEx(key, "Publisher", 0, winreg.REG_SZ, "AURA Security")
+                    winreg.SetValueEx(key, "InstallLocation", 0, winreg.REG_SZ, self.install_dir)
+                    winreg.SetValueEx(key, "UninstallString", 0, winreg.REG_SZ, uninstall_cmd)
+                    winreg.SetValueEx(key, "DisplayIcon", 0, winreg.REG_SZ, dest_exe)
+                    winreg.SetValueEx(key, "EstimatedSize", 0, winreg.REG_DWORD, total_size_kb)
+                    winreg.SetValueEx(key, "NoModify", 0, winreg.REG_DWORD, 1)
+                    winreg.SetValueEx(key, "NoRepair", 0, winreg.REG_DWORD, 1)
+            except Exception as reg_err:
+                print(f"Failed to register application in registry: {reg_err}")
+
             self.lbl_status.config(text="Finishing setup...")
             self.progress['value'] = 100
             self.root.update()
