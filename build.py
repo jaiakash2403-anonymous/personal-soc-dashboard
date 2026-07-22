@@ -66,6 +66,19 @@ def build():
         print(f"\nPhase 2 failed with exit code: {result_setup.returncode}")
         sys.exit(1)
         
+    # --- PHASE 3: SIGN EXECUTABLES ---
+    print("\n[PHASE 3] Digitally Signing Packaged Binaries...")
+    try:
+        sign_cmd = "powershell.exe -ExecutionPolicy Bypass -File sign_executables.ps1"
+        print(f"Running command: {sign_cmd}")
+        result_sign = subprocess.run(sign_cmd, shell=True)
+        if result_sign.returncode != 0:
+            print("\nWarning: Digital signing failed. Proceeding with unsigned binaries.")
+        else:
+            print("\nPhase 3 Succeeded: Digitally signed executables.")
+    except Exception as sign_err:
+        print(f"\nWarning: Could not sign executables: {sign_err}")
+
     print("\n==================================================")
     print("BUILD SUCCESSFUL!")
     print("Main Application: dist/PersonalSOC.exe")
