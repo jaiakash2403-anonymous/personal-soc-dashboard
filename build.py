@@ -29,6 +29,7 @@ def build():
         "--noconsole",
         f"--add-data=frontend{sep}frontend",
         "--icon=icon.ico",
+        "--version-file=version_info_app.txt",
         "--name=PersonalSOC",
         "app.py"
     ]
@@ -53,6 +54,7 @@ def build():
         f"--add-data=dist/PersonalSOC.exe{sep}.",
         f"--add-data=dist/soc_dashboard.db{sep}.",
         "--icon=icon.ico",
+        "--version-file=version_info_setup.txt",
         "--name=PersonalSOC_Setup",
         "setup_wizard.py"
     ]

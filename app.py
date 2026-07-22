@@ -10,6 +10,30 @@ import hashlib
 import uuid
 import sqlite3
 import webview
+import ctypes
+
+def check_admin_and_elevate():
+    """Verify administrator privileges and trigger UAC elevation if missing to prevent Windows blocks on telemetry"""
+    try:
+        if ctypes.windll.shell32.IsUserAnAdmin():
+            return True
+    except Exception:
+        pass
+    
+    # If not running as admin and frozen as EXE, re-launch with "runas" UAC prompt
+    if hasattr(sys, 'frozen'):
+        try:
+            # Re-launch the compiled exe with admin elevation
+            ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, None, None, 1)
+            sys.exit(0)
+        except Exception as e:
+            # User cancelled UAC prompt or block occurred
+            print(f"UAC elevation prompt rejected or failed: {e}")
+            return False
+    return False
+
+# Trigger UAC elevation check immediately on startup
+check_admin_and_elevate()
 
 # Suppress console windows when launching subprocesses in PyInstaller --noconsole mode
 CREATE_NO_WINDOW = 0x08000000
