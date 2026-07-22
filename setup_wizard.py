@@ -174,6 +174,7 @@ Set shell = CreateObject("WScript.Shell")
 Set shortcut = shell.CreateShortcut("{shortcut_path}")
 shortcut.TargetPath = "{target_path}"
 shortcut.WorkingDirectory = "{working_dir}"
+shortcut.IconLocation = "{target_path},0"
 shortcut.Save()
 """
         try:
