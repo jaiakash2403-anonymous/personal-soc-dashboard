@@ -188,6 +188,21 @@ shortcut.Save()
 
     def perform_installation(self):
         try:
+            # 0. Check if target executable is locked/running
+            try:
+                tasklist_out = subprocess.check_output('tasklist /FI "IMAGENAME eq PersonalSOC.exe"', shell=True, text=True, creationflags=0x08000000)
+                if "PersonalSOC.exe" in tasklist_out:
+                    ans = messagebox.askyesno("Process Running", "AURA Personal SOC (PersonalSOC.exe) is currently running.\n\nWould you like the installer to automatically close it to proceed?")
+                    if ans:
+                        subprocess.run("taskkill /F /IM PersonalSOC.exe", shell=True, creationflags=0x08000000)
+                        import time
+                        time.sleep(1.5)
+                    else:
+                        raise PermissionError("Installation cancelled because target file is in use. Please close Personal SOC and retry.")
+            except Exception as e:
+                if isinstance(e, PermissionError):
+                    raise e
+
             # 1. Create target directory
             self.lbl_status.config(text="Creating target folders...")
             self.progress['value'] = 20

@@ -1064,4 +1064,61 @@ ${recsListMd}
             toast.classList.add('hidden');
         }, 3200);
     }
+
+    // ==========================================
+    // 📄 ETHICAL PRIVACY AND SECURITY CONSENT
+    // ==========================================
+    const consentGranted = localStorage.getItem('aura_soc_consent_granted');
+    const consentOverlay = document.getElementById('consent-overlay');
+    const formConsent = document.getElementById('form-consent');
+    const btnCloseConsent = document.getElementById('btn-close-consent');
+    
+    if (consentGranted !== 'true') {
+        if (consentOverlay) consentOverlay.classList.remove('hidden');
+        if (authOverlay) authOverlay.classList.add('hidden');
+        if (btnCloseConsent) btnCloseConsent.classList.add('hidden');
+    } else {
+        if (consentOverlay) consentOverlay.classList.add('hidden');
+        if (btnCloseConsent) btnCloseConsent.classList.remove('hidden');
+    }
+
+    if (formConsent) {
+        formConsent.addEventListener('submit', (e) => {
+            e.preventDefault();
+            localStorage.setItem('aura_soc_consent_granted', 'true');
+            if (consentOverlay) consentOverlay.classList.add('hidden');
+            if (btnCloseConsent) btnCloseConsent.classList.remove('hidden');
+            
+            // Show login interface now that consent is unlocked
+            if (!sessionActive && authOverlay) {
+                authOverlay.classList.remove('hidden');
+            }
+            showToast("Consent tokens verified. AURA Personal SOC unlocked!", true);
+        });
+    }
+
+    if (btnCloseConsent) {
+        btnCloseConsent.addEventListener('click', () => {
+            if (consentOverlay) consentOverlay.classList.add('hidden');
+        });
+    }
+
+    const btnViewConsentPolicy = document.getElementById('btn-view-consent-policy');
+    const btnResetConsent = document.getElementById('btn-reset-consent');
+
+    if (btnViewConsentPolicy) {
+        btnViewConsentPolicy.addEventListener('click', () => {
+            if (consentOverlay) consentOverlay.classList.remove('hidden');
+        });
+    }
+
+    if (btnResetConsent) {
+        btnResetConsent.addEventListener('click', () => {
+            const confirmReset = confirm("Are you sure you want to revoke consent? This will lock the console and clear your consent status.");
+            if (confirmReset) {
+                localStorage.removeItem('aura_soc_consent_granted');
+                location.reload();
+            }
+        });
+    }
 });
