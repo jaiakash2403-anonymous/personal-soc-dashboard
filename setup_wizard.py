@@ -9,7 +9,7 @@ from tkinter import ttk
 class SetupWizard:
     def __init__(self, root):
         self.root = root
-        self.root.title("AURA Personal SOC - Setup Wizard (v2.0)")
+        self.root.title("AURA Personal SOC - Setup Wizard (v2.1)")
         self.root.geometry("540x380")
         self.root.resizable(False, False)
         
@@ -47,7 +47,7 @@ class SetupWizard:
         lbl_welcome_title = tk.Label(f0, text="Welcome to the AURA Personal SOC Setup Wizard", font=("Outfit", 15, "bold"), fg="#0f172a", bg="#f8fafc", justify="left")
         lbl_welcome_title.pack(anchor="w", pady=(0, 12))
         
-        lbl_welcome_desc = tk.Label(f0, text="This setup wizard will install AURA Personal SOC (v2.0) on your computer.\n\nIt is recommended to close all other applications before continuing.\n\nClick Next to proceed with the installation.", font=("Inter", 10), fg="#475569", bg="#f8fafc", justify="left", wraplength=480)
+        lbl_welcome_desc = tk.Label(f0, text="This setup wizard will install AURA Personal SOC (v2.1) on your computer.\n\nIt is recommended to close all other applications before continuing.\n\nClick Next to proceed with the installation.", font=("Inter", 10), fg="#475569", bg="#f8fafc", justify="left", wraplength=480)
         lbl_welcome_desc.pack(anchor="w", pady=(0, 24))
         self.frames.append(f0)
         
@@ -93,7 +93,7 @@ class SetupWizard:
         lbl_success_title = tk.Label(f3, text="Installation Completed Successfully", font=("Outfit", 15, "bold"), fg="#10b981", bg="#f8fafc")
         lbl_success_title.pack(anchor="w", pady=(0, 12))
         
-        lbl_success_desc = tk.Label(f3, text="AURA Personal SOC (v2.0) has been installed on your PC.\n\nClick Finish to exit this wizard.", font=("Inter", 10), fg="#475569", bg="#f8fafc", justify="left", wraplength=480)
+        lbl_success_desc = tk.Label(f3, text="AURA Personal SOC (v2.1) has been installed on your PC.\n\nClick Finish to exit this wizard.", font=("Inter", 10), fg="#475569", bg="#f8fafc", justify="left", wraplength=480)
         lbl_success_desc.pack(anchor="w", pady=(0, 24))
         
         chk_launch = tk.Checkbutton(f3, text="Launch AURA Personal SOC now", variable=self.launch_after, font=("Inter", 10, "bold"), fg="#4f46e5", bg="#f8fafc", activebackground="#f8fafc")

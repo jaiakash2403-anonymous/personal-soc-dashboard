@@ -3,7 +3,7 @@ import sys
 import os
 
 def build():
-    print("Building Personal SOC Dashboard (v2.0)...")
+    print("Building Personal SOC Dashboard (v2.1)...")
     
     # In Windows, we use a semicolon separator. On other systems, we use a colon.
     sep = ';' if sys.platform.startswith('win') else ':'
